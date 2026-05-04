@@ -551,6 +551,9 @@ def profile():
     notifs = db.execute("SELECT COUNT(*) as c FROM notifications WHERE user_id=? AND is_read=0", (session['user_id'],)).fetchone()['c']
     return render_template('profile.html', user=user, notif_count=notifs)
 
-if __name__ == '__main__':
+# BAG-O (mao ni ang sakto)
+with app.app_context():
     init_db()
+
+if __name__ == '__main__':
     app.run(debug=True)
