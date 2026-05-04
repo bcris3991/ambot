@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Demand Prediction — WMSU Library{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-0">📊 Demand Prediction</h2>
+      <small class="text-muted">Powered by Machine Learning (Linear Regression) &nbsp;·&nbsp; Generated: {{ generated_at }}</small>
+    </div>
+    <a href="{{ url_for('predictions') }}" class="btn btn-outline-primary btn-sm">
+      🔄 Refresh Predictions
+    </a>
+  </div>
+
+  <!-- Info Banner -->
+  <div class="alert alert-info d-flex align-items-start gap-2 mb-4">
+    <span style="font-size:1.4rem;">🤖</span>
+    <div>
+      <strong>How it works:</strong> Ang sistema nag-analyze sa historical borrow data per month.
+      Gamiton ang <strong>Linear Regression</strong> para ma-predict kung pila ka books ang expected
+      ma-borrow sa <strong>next month</strong> para sa matag title.
+      Mas daghan nga borrow history = mas accurate nga prediction.
+    </div>
+  </div>
+
+  <!-- Category Summary Cards -->
+  {% if category_summary %}
+  <h5 class="fw-semibold mb-3">Predicted Demand by Category</h5>
+  <div class="row g-3 mb-4">
+    {% for cat in category_summary %}
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body text-center">
+          <div class="fs-2 fw-bold text-primary">{{ cat.predicted_demand }}</div>
+          <div class="text-muted small">{{ cat.category }}</div>
+          <div class="text-muted" style="font-size:0.75rem;">expected borrows</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Predictions Table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom py-3">
+      <h5 class="mb-0 fw-semibold">📚 Book-Level Predictions (Next Month)</h5>
+    </div>
+    <div class="card-body p-0">
+      {% if predictions %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Book Title</th>
+              <th>Category</th>
+              <th class="text-center">Total Borrows</th>
+              <th class="text-center">Avg / Month</th>
+              <th class="text-center">Predicted Next Month</th>
+              <th class="text-center">Trend</th>
+              <th class="text-center">Confidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in predictions %}
+            <tr>
+              <td class="text-muted small">{{ loop.index }}</td>
+              <td>
+                <div class="fw-semibold">{{ p.item_name }}</div>
+                <div class="text-muted small">{{ p.months_of_data }} month(s) of data</div>
+              </td>
+              <td>
+                <span class="badge bg-secondary bg-opacity-10 text-secondary border">
+                  {{ p.category }}
+                </span>
+              </td>
+              <td class="text-center">{{ p.total_borrows }}</td>
+              <td class="text-center">{{ p.avg_monthly_borrows }}</td>
+              <td class="text-center">
+                <span class="fs-5 fw-bold text-primary">{{ p.predicted_next_month }}</span>
+              </td>
+              <td class="text-center">
+                {% if p.trend == 'Rising' %}
+                  <span class="badge bg-success">📈 Rising</span>
+                {% elif p.trend == 'Declining' %}
+                  <span class="badge bg-danger">📉 Declining</span>
+                {% else %}
+                  <span class="badge bg-secondary">➡️ Stable</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                {% if p.confidence == 'High' %}
+                  <span class="badge bg-primary">High</span>
+                {% elif p.confidence == 'Medium' %}
+                  <span class="badge bg-warning text-dark">Medium</span>
+                {% else %}
+                  <span class="badge bg-light text-muted border">Low</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5 text-muted">
+        <div style="font-size:3rem;">📭</div>
+        <p class="mt-2">Wala pa'y borrow history para ma-generate ang predictions.<br>
+        Mag-approve ug mga borrow requests para magsugod ang ML analysis.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="mt-4 p-3 bg-light rounded small text-muted">
+    <strong>Legend:</strong>
+    &nbsp;📈 <strong>Rising</strong> — nag-increase ang demand over time &nbsp;|&nbsp;
+    ➡️ <strong>Stable</strong> — consistent ra ang borrow rate &nbsp;|&nbsp;
+    📉 <strong>Declining</strong> — decreasing ang interest &nbsp;|&nbsp;
+    <strong>Confidence</strong>: High = 4+ months data, Medium = 2-3 months, Low = 1 month ra
+  </div>
+
+</div>
+{% endblock %}

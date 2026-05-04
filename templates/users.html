@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% block title %}Users — WMSU{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block topbar_actions %}
+  <button class="btn btn-primary btn-sm" onclick="openModal('addUserModal')">
+    <i class="fas fa-user-plus"></i> Add User
+  </button>
+{% endblock %}
+
+{% block content %}
+{# ── SERVER-SIDE ROLE GUARD ── #}
+{% if session.role != 'Admin' %}
+  <div class="empty-state">
+    <i class="fas fa-lock" style="color:var(--danger)"></i>
+    <p style="color:var(--danger);font-weight:500">Access Denied</p>
+    <p>This page is for Administrators only.</p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary" style="margin-top:16px">Back to Dashboard</a>
+  </div>
+{% else %}
+<div class="stats-grid" style="margin-bottom:24px">
+  {% set admin_count = users|selectattr('role','eq','Admin')|list|length %}
+  {% set staff_count = users|selectattr('role','eq','Staff')|list|length %}
+  {% set student_count = users|selectattr('role','eq','Student')|list|length %}
+  <div class="stat-card">
+    <div class="stat-icon amber"><i class="fas fa-users"></i></div>
+    <div><div class="stat-value">{{ users|length }}</div><div class="stat-label">Total Users</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red"><i class="fas fa-shield-halved"></i></div>
+    <div><div class="stat-value">{{ admin_count }}</div><div class="stat-label">Admins</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon blue"><i class="fas fa-user-tie"></i></div>
+    <div><div class="stat-value">{{ staff_count }}</div><div class="stat-label">Staff</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"><i class="fas fa-user-graduate"></i></div>
+    <div><div class="stat-value">{{ student_count }}</div><div class="stat-label">Students</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Joined</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td style="color:var(--text-muted);font-size:13px">{{ u.id }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:34px;height:34px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0">
+                {{ u.name[0].upper() }}
+              </div>
+              <span style="font-weight:500">{{ u.name }}</span>
+            </div>
+          </td>
+          <td style="color:var(--text-muted)">{{ u.email }}</td>
+          <td>
+            <span class="badge badge-{{ u.role|lower }}">{{ u.role }}</span>
+          </td>
+          <td style="color:var(--text-muted);font-size:13px">{{ u.created_at[:10] }}</td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-xs"
+                onclick="openEditUserModal({{ u.id }}, '{{ u.name|replace("'","\\'") }}', '{{ u.email }}', '{{ u.role }}')">
+                <i class="fas fa-pen"></i> Edit
+              </button>
+              {% if u.id != session.user_id %}
+              <form method="POST" action="{{ url_for('delete_user', user_id=u.id) }}" onsubmit="return confirm('Delete user {{ u.name }}?')">
+                <button type="submit" class="btn btn-danger btn-xs"><i class="fas fa-trash"></i></button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD USER MODAL -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Add New User</h3>
+      <button class="modal-close" onclick="closeModal('addUserModal')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <form method="POST" action="{{ url_for('add_user') }}">
+      <div class="form-group">
+        <label class="form-label">Full Name *</label>
+        <input type="text" name="name" class="form-control" required placeholder="Full name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input type="email" name="email" class="form-control" required placeholder="email@wmsu.edu.ph">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Password *</label>
+          <input type="password" name="password" class="form-control" required placeholder="Password" minlength="6">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role *</label>
+          <select name="role" class="form-control">
+            <option value="Student">Student</option>
+            <option value="Staff">Staff</option>
+            <option value="Admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('addUserModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-user-plus"></i> Add User</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EDIT USER MODAL -->
+<div class="modal-overlay" id="editUserModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Edit User</h3>
+      <button class="modal-close" onclick="closeModal('editUserModal')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <form method="POST" id="editUserForm">
+      <div class="form-group">
+        <label class="form-label">Full Name *</label>
+        <input type="text" name="name" id="eu_name" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input type="email" name="email" id="eu_email" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role *</label>
+        <select name="role" id="eu_role" class="form-control">
+          <option value="Student">Student</option>
+          <option value="Staff">Staff</option>
+          <option value="Admin">Admin</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('editUserModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openEditUserModal(id, name, email, role) {
+  document.getElementById('eu_name').value = name;
+  document.getElementById('eu_email').value = email;
+  document.getElementById('eu_role').value = role;
+  document.getElementById('editUserForm').action = `/users/edit/${id}`;
+  openModal('editUserModal');
+}
+</script>
+{% endblock %}

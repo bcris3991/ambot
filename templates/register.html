@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — WMSU Inventory</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--bg:#f7f5f2;--surface:#ffffff;--border:#e8e3dc;--text:#1a1714;--text-muted:#7a736b;--accent:#c17f3e;--accent-light:#f5ead9;--danger:#c0544a;--danger-light:#fcecea;--accent2:#4a7c6f;--accent2-light:#e0eeec;--radius:14px;--radius-sm:8px;--shadow-md:0 4px 32px rgba(0,0,0,0.10);--transition:0.22s cubic-bezier(.4,0,.2,1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-wrap{width:min(480px,100%);animation:slideUp 0.4s ease}
+.auth-card{background:var(--surface);border-radius:20px;padding:44px;box-shadow:var(--shadow-md)}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,#c17f3e,#a86c2e);border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-size:20px}
+h2{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text);margin-bottom:6px}
+p.sub{color:var(--text-muted);font-size:14px;margin-bottom:28px}
+.flash{padding:10px 14px;border-radius:8px;font-size:13.5px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.flash.error{background:var(--danger-light);color:var(--danger)}
+.flash.success{background:var(--accent2-light);color:var(--accent2)}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+.input-wrap{position:relative}
+.input-wrap i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px}
+.form-control{width:100%;padding:11px 14px 11px 38px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:all var(--transition)}
+.form-control:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(193,127,62,0.12)}
+select.form-control{padding-left:38px;cursor:pointer}
+.btn-auth{width:100%;padding:13px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:15px;font-weight:500;font-family:inherit;cursor:pointer;transition:all var(--transition);margin-top:8px}
+.btn-auth:hover{background:#a86c2e;box-shadow:0 4px 14px rgba(193,127,62,0.35);transform:translateY(-1px)}
+.auth-footer{margin-top:20px;text-align:center;font-size:13.5px;color:var(--text-muted)}
+.auth-footer a{color:var(--accent);text-decoration:none;font-weight:500}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon"><i class="fas fa-boxes-stacked"></i></div>
+      <div>
+        <div style="font-family:'DM Serif Display',serif;font-size:17px">WMSU Inventory</div>
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">Borrowing System</div>
+      </div>
+    </div>
+    <h2>Create Account</h2>
+    <p class="sub">Register to start borrowing items.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}{% for cat,msg in messages %}
+        <div class="flash {{ cat }}">
+          <i class="fas fa-{% if cat=='success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>{{ msg }}
+        </div>
+      {% endfor %}{% endif %}
+    {% endwith %}
+
+    <form method="POST">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <div class="input-wrap">
+          <i class="fas fa-user"></i>
+          <input type="text" name="name" class="form-control" placeholder="Juan Dela Cruz" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <div class="input-wrap">
+          <i class="fas fa-envelope"></i>
+          <input type="email" name="email" class="form-control" placeholder="you@wmsu.edu.ph" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock"></i>
+          <input type="password" name="password" class="form-control" placeholder="Create a password" required minlength="6">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Register as</label>
+        <div class="input-wrap">
+          <i class="fas fa-id-card"></i>
+          <select name="role" class="form-control">
+            <option value="Student">Student</option>
+            <option value="Staff">Staff</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn-auth">Create Account <i class="fas fa-arrow-right" style="margin-left:6px"></i></button>
+    </form>
+    <div class="auth-footer">Already have an account? <a href="/login">Sign in</a></div>
+  </div>
+</div>
+</body>
+</html>

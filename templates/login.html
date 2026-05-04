@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — WMSU Inventory</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --bg: #f7f5f2;
+  --surface: #ffffff;
+  --border: #e8e3dc;
+  --text: #1a1714;
+  --text-muted: #7a736b;
+  --accent: #c17f3e;
+  --accent-light: #f5ead9;
+  --danger: #c0544a;
+  --danger-light: #fcecea;
+  --accent2: #4a7c6f;
+  --accent2-light: #e0eeec;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow-md: 0 4px 32px rgba(0,0,0,0.10);
+  --transition: 0.22s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.auth-wrap {
+  display: flex;
+  width: min(900px, 100%);
+  min-height: 560px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  animation: slideUp 0.4s cubic-bezier(.4,0,.2,1);
+}
+.auth-panel {
+  flex: 1;
+  background: linear-gradient(145deg, #c9a06e 0%, #a0673a 40%, #7a4a28 100%);
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.auth-panel::before {
+  content: '';
+  position: absolute;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  top: -80px; right: -80px;
+}
+.auth-panel::after {
+  content: '';
+  position: absolute;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  bottom: -40px; left: -40px;
+}
+.panel-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+.panel-logo-icon {
+  width: 48px; height: 48px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  backdrop-filter: blur(4px);
+}
+.panel-logo-text h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  font-weight: 400;
+}
+.panel-logo-text p {
+  font-size: 12px;
+  opacity: 0.75;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.panel-body {
+  position: relative;
+}
+.panel-body h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 34px;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+.panel-body p {
+  font-size: 14px;
+  opacity: 0.8;
+  line-height: 1.6;
+  max-width: 280px;
+}
+.panel-footer {
+  font-size: 12px;
+  opacity: 0.6;
+  position: relative;
+}
+.auth-form-panel {
+  flex: 1.1;
+  background: var(--surface);
+  padding: 48px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.auth-form-panel h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 26px;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.auth-form-panel p.sub {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+.flash {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.flash.error { background: var(--danger-light); color: var(--danger); }
+.flash.success { background: var(--accent2-light); color: var(--accent2); }
+.form-group { margin-bottom: 18px; }
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.input-wrap {
+  position: relative;
+}
+.input-wrap i {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.form-control {
+  width: 100%;
+  padding: 11px 14px 11px 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: all var(--transition);
+}
+.form-control:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(193,127,62,0.12);
+}
+.btn-auth {
+  width: 100%;
+  padding: 13px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition);
+  margin-top: 8px;
+}
+.btn-auth:hover {
+  background: #a86c2e;
+  box-shadow: 0 4px 14px rgba(193,127,62,0.35);
+  transform: translateY(-1px);
+}
+.auth-footer {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+.auth-footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
+.auth-footer a:hover { text-decoration: underline; }
+.demo-creds {
+  margin-top: 20px;
+  padding: 14px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+.demo-creds strong { color: var(--text); }
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+@media(max-width:700px){
+  .auth-panel{display:none}
+  .auth-form-panel{padding:36px 28px}
+}
+</style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-panel">
+    <div class="panel-logo">
+      <div class="panel-logo-icon"><i class="fas fa-boxes-stacked"></i></div>
+      <div class="panel-logo-text">
+        <h1>WMSU</h1>
+        <p>Inventory System</p>
+      </div>
+    </div>
+    <div class="panel-body">
+      <h2>Manage.<br>Borrow.<br>Track.</h2>
+      <p>A unified platform for inventory control and borrowing management at Western Mindanao State University.</p>
+    </div>
+    <div class="panel-footer">© 2024 WMSU — All rights reserved</div>
+  </div>
+
+  <div class="auth-form-panel">
+    <h2>Welcome back</h2>
+    <p class="sub">Sign in to your account to continue.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="flash {{ cat }}">
+            <i class="fas fa-{% if cat=='success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+            {{ msg }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <div class="input-wrap">
+          <i class="fas fa-envelope"></i>
+          <input type="email" name="email" class="form-control" placeholder="you@wmsu.edu.ph" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock"></i>
+          <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+        </div>
+      </div>
+      <button type="submit" class="btn-auth">Sign In <i class="fas fa-arrow-right" style="margin-left:6px"></i></button>
+    </form>
+    <div class="auth-footer">
+      Don't have an account? <a href="/register">Register here</a>
+    </div>
+    <div class="demo-creds">
+      <strong>Demo Credentials:</strong><br>
+      Admin: admin@wmsu.edu.ph / admin123<br>
+      Staff: staff@wmsu.edu.ph / staff123
+    </div>
+  </div>
+</div>
+</body>
+</html>

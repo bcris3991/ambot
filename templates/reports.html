@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}Reports — WMSU{% endblock %}
+{% block page_title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+{% if session.role != 'Admin' %}
+  <div class="empty-state">
+    <i class="fas fa-lock" style="color:var(--danger)"></i>
+    <p style="color:var(--danger);font-weight:500">Access Denied</p>
+    <p>This page is for Administrators only.</p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary" style="margin-top:16px">Back to Dashboard</a>
+  </div>
+{% else %}
+<!-- Status Summary -->
+<div class="stats-grid">
+  {% for s in status_summary %}
+  <div class="stat-card">
+    <div class="stat-icon {% if s.status=='Approved' %}green{% elif s.status=='Pending' %}amber{% elif s.status=='Rejected' %}red{% elif s.status=='Returned' %}blue{% else %}red{% endif %}">
+      {% if s.status=='Approved' %}<i class="fas fa-check-circle"></i>
+      {% elif s.status=='Pending' %}<i class="fas fa-clock"></i>
+      {% elif s.status=='Rejected' %}<i class="fas fa-xmark-circle"></i>
+      {% elif s.status=='Returned' %}<i class="fas fa-rotate-left"></i>
+      {% else %}<i class="fas fa-triangle-exclamation"></i>{% endif %}
+    </div>
+    <div>
+      <div class="stat-value">{{ s.count }}</div>
+      <div class="stat-label">{{ s.status }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+
+  <!-- Most Borrowed Items -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Most Borrowed Items</h3>
+      <i class="fas fa-trophy" style="color:var(--accent)"></i>
+    </div>
+    {% if most_borrowed %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Item</th><th>Category</th><th>Borrows</th></tr></thead>
+        <tbody>
+          {% for item in most_borrowed %}
+          <tr>
+            <td style="font-weight:500">{{ item.item_name }}</td>
+            <td><span class="badge badge-available">{{ item.category }}</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="flex:1;height:6px;background:var(--border);border-radius:3px;max-width:80px">
+                  <div style="height:100%;background:var(--accent);border-radius:3px;width:{{ [item.borrow_count * 10, 100]|min }}%"></div>
+                </div>
+                <strong>{{ item.borrow_count }}</strong>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="fas fa-chart-bar"></i><p>No data yet.</p></div>
+    {% endif %}
+  </div>
+
+  <!-- Most Active Users -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Most Active Users</h3>
+      <i class="fas fa-star" style="color:var(--accent)"></i>
+    </div>
+    {% if active_users %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Role</th><th>Requests</th></tr></thead>
+        <tbody>
+          {% for u in active_users %}
+          <tr>
+            <td>
+              <div style="font-weight:500">{{ u.name }}</div>
+              <div style="font-size:12px;color:var(--text-muted)">{{ u.email }}</div>
+            </td>
+            <td><span class="badge badge-{{ u.role|lower }}">{{ u.role }}</span></td>
+            <td><strong>{{ u.request_count }}</strong></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="fas fa-users"></i><p>No data yet.</p></div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Monthly Chart -->
+<div class="card" style="margin-bottom:20px">
+  <div class="card-header">
+    <h3 class="card-title">Monthly Borrow Activity</h3>
+  </div>
+  <div style="padding:8px 0">
+    {% if monthly %}
+    <div style="display:flex;align-items:flex-end;gap:16px;height:120px;padding:0 8px">
+      {% set max_count = monthly|map(attribute='count')|max %}
+      {% for m in monthly|reverse %}
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
+        <span style="font-size:12px;font-weight:600;color:var(--text)">{{ m.count }}</span>
+        <div style="width:100%;background:var(--accent);border-radius:4px 4px 0 0;height:{{ [(m.count / max_count * 90)|int, 8]|max }}px;transition:height .4s ease"></div>
+        <span style="font-size:11px;color:var(--text-muted)">{{ m.month[-2:] }}/{{ m.month[:4][-2:] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><i class="fas fa-chart-column"></i><p>No data yet.</p></div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Overdue Items -->
+{% if overdue %}
+<div class="card" style="border-color:#f0c0bb">
+  <div class="card-header">
+    <h3 class="card-title" style="color:var(--danger)"><i class="fas fa-triangle-exclamation" style="margin-right:8px"></i>Overdue Items</h3>
+    <span class="badge badge-overdue">{{ overdue|length }} overdue</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Borrower</th><th>Item</th><th>Due Date</th><th>Days Overdue</th></tr></thead>
+      <tbody>
+        {% for r in overdue %}
+        <tr>
+          <td style="font-weight:500">{{ r.borrower }}</td>
+          <td>{{ r.item_name }}</td>
+          <td style="color:var(--danger)">{{ r.due_date }}</td>
+          <td>
+            <span class="badge badge-overdue">
+              <i class="fas fa-clock"></i>
+              Overdue
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

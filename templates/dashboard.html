@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — WMSU Inventory{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:24px">
+  <h2 style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--text)">
+    Good day, {{ session.name.split()[0] }}! 👋
+  </h2>
+  <p style="color:var(--text-muted);font-size:14px;margin-top:4px">
+    {{ session.role }} · Here's what's happening today.
+  </p>
+</div>
+
+{% if session.role == 'Admin' %}
+<div class="stats-grid">
+  <div class="stat-card" style="animation-delay:0s">
+    <div class="stat-icon amber"><i class="fas fa-users"></i></div>
+    <div>
+      <div class="stat-value">{{ stats.total_users }}</div>
+      <div class="stat-label">Total Users</div>
+    </div>
+  </div>
+  <div class="stat-card" style="animation-delay:.07s">
+    <div class="stat-icon green"><i class="fas fa-box-archive"></i></div>
+    <div>
+      <div class="stat-value">{{ stats.total_items }}</div>
+      <div class="stat-label">Inventory Items</div>
+    </div>
+  </div>
+  <div class="stat-card" style="animation-delay:.14s">
+    <div class="stat-icon red"><i class="fas fa-hourglass-half"></i></div>
+    <div>
+      <div class="stat-value">{{ stats.pending_requests }}</div>
+      <div class="stat-label">Pending Requests</div>
+    </div>
+  </div>
+  <div class="stat-card" style="animation-delay:.21s">
+    <div class="stat-icon blue"><i class="fas fa-right-left"></i></div>
+    <div>
+      <div class="stat-value">{{ stats.active_borrows }}</div>
+      <div class="stat-label">Active Borrows</div>
+    </div>
+  </div>
+</div>
+
+{% elif session.role == 'Staff' %}
+<div class="stats-grid">
+  <div class="stat-card" style="animation-delay:0s">
+    <div class="stat-icon green"><i class="fas fa-box-archive"></i></div>
+    <div>
+      <div class="stat-value">{{ stats.total_items }}</div>
+      <div class="stat-label">Inventory Items</div>
+    </div>
+  </div>
+  <div class="stat-card" style="animation-delay:.07s">
+    <div class="stat-icon red"><i class="fas fa-hourglass-half"></i></div>
+    <div>
+      <div class="stat-value">{{ stats.pending_requests }}</div>
+      <div class="stat-label">Pending Requests</div>
+    </div>
+  </div>
+  <div class="stat-card" style="animation-delay:.14s">
+    <div class="stat-icon amber"><i class="fas fa-check-circle"></i></div>
+    <div>
+      <div class="stat-value">{{ stats.approved_today }}</div>
+      <div class="stat-label">Approved Today</div>
+    </div>
+  </div>
+  <div class="stat-card" style="animation-delay:.21s">
+    <div class="stat-icon blue"><i class="fas fa-triangle-exclamation"></i></div>
+    <div>
+      <div class="stat-value">{{ stats.low_stock }}</div>
+      <div class="stat-label">Low Stock Items</div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="stats-grid">
+  <div class="stat-card" style="animation-delay:0s">
+    <div class="stat-icon amber"><i class="fas fa-hand-holding"></i></div>
+    <div>
+      <div class="stat-value">{{ stats.my_borrows }}</div>
+      <div class="stat-label">Active Borrows</div>
+    </div>
+  </div>
+  <div class="stat-card" style="animation-delay:.07s">
+    <div class="stat-icon red"><i class="fas fa-hourglass-half"></i></div>
+    <div>
+      <div class="stat-value">{{ stats.pending }}</div>
+      <div class="stat-label">Pending Requests</div>
+    </div>
+  </div>
+  <div class="stat-card" style="animation-delay:.14s">
+    <div class="stat-icon green"><i class="fas fa-rotate-left"></i></div>
+    <div>
+      <div class="stat-value">{{ stats.returned }}</div>
+      <div class="stat-label">Items Returned</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card" style="animation-delay:.2s">
+  <div class="card-header">
+    <h3 class="card-title">
+      {% if session.role == 'Student' %}My Recent Requests{% else %}Recent Activity{% endif %}
+    </h3>
+    <a href="{{ url_for('borrow_requests') }}" class="btn btn-ghost btn-sm">View all</a>
+  </div>
+  {% if stats.recent %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          {% if session.role != 'Student' %}<th>Borrower</th>{% endif %}
+          <th>Item</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Due Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in stats.recent %}
+        <tr class="{% if r.status == 'Approved' and r.due_date and r.due_date < today %}overdue-row{% endif %}">
+          {% if session.role != 'Student' %}
+          <td><strong>{{ r.borrower }}</strong></td>
+          {% endif %}
+          <td>{{ r.item_name }}</td>
+          <td>
+            <span class="badge badge-{{ r.status|lower }}">
+              {% if r.status=='Pending' %}<i class="fas fa-clock"></i>
+              {% elif r.status=='Approved' %}<i class="fas fa-check"></i>
+              {% elif r.status=='Rejected' %}<i class="fas fa-xmark"></i>
+              {% elif r.status=='Returned' %}<i class="fas fa-rotate-left"></i>
+              {% endif %}
+              {{ r.status }}
+            </span>
+          </td>
+          <td style="color:var(--text-muted);font-size:13px">{{ r.date_borrowed or r.created_at[:10] }}</td>
+          <td style="color:var(--text-muted);font-size:13px">{{ r.due_date or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-inbox"></i>
+    <p>No recent activity.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% if session.role == 'Student' %}
+<div class="card" style="margin-top:16px;animation-delay:.28s">
+  <div class="card-header">
+    <h3 class="card-title">Quick Borrow</h3>
+  </div>
+  <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px">Browse available items and submit a borrow request.</p>
+  <a href="{{ url_for('items') }}" class="btn btn-primary"><i class="fas fa-box-archive"></i> Browse Inventory</a>
+  <a href="{{ url_for('borrow_requests') }}" class="btn btn-ghost" style="margin-left:8px"><i class="fas fa-list"></i> My Requests</a>
+</div>
+{% elif session.role == 'Admin' %}
+<div class="card" style="margin-top:16px;animation-delay:.28s">
+  <div class="card-header">
+    <h3 class="card-title">Quick Actions</h3>
+  </div>
+  <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px">Manage your system from here.</p>
+  <a href="{{ url_for('manage_users') }}" class="btn btn-primary"><i class="fas fa-users"></i> Manage Users</a>
+  <a href="{{ url_for('reports') }}" class="btn btn-ghost" style="margin-left:8px"><i class="fas fa-chart-bar"></i> View Reports</a>
+  <a href="{{ url_for('predictions') }}" class="btn btn-ghost" style="margin-left:8px"><i class="fas fa-brain"></i> Demand Prediction</a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const today = new Date().toISOString().slice(0,10);
+</script>
+{% endblock %}

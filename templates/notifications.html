@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Notifications — WMSU{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="card">
+  {% if notifications %}
+  <div style="display:flex;flex-direction:column;gap:2px">
+    {% for n in notifications %}
+    <div style="padding:16px 18px;border-radius:10px;background:{% if not n.is_read %}var(--accent-light){% else %}transparent{% endif %};border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;transition:background .2s;animation:fadeInUp .3s ease {{ loop.index0 * 0.04 }}s both">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px">
+        <i class="fas fa-bell"></i>
+      </div>
+      <div style="flex:1">
+        <p style="font-size:14px;color:var(--text);line-height:1.5">{{ n.message }}</p>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:4px">{{ n.created_at[:16] }}</p>
+      </div>
+      {% if not n.is_read %}
+      <div style="width:8px;height:8px;background:var(--accent);border-radius:50%;flex-shrink:0;margin-top:6px"></div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-bell-slash"></i>
+    <p>No notifications yet.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
