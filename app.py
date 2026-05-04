@@ -10,9 +10,7 @@ from ml_predictor import predict_demand, get_category_summary
 app = Flask(__name__)
 app.secret_key = 'wmsu_inventory_secret_key_2024'
 DATABASE = os.path.join(app.instance_path, 'wmsu_inventory.db')
-with app.app_context():
-    init_db()
-os.makedirs(app.instance_path, exist_ok=True)
+os.makedirs(app.instance_path, exist_ok=True)  # ← FIXED: create folder first
 
 # ─── DB HELPERS ───────────────────────────────────────────────────────────────
 
@@ -478,17 +476,12 @@ def reports():
 @login_required
 @role_required('Admin', 'Staff')
 def predictions():
-    """
-    Demand Prediction page — gamiton ang ML (Linear Regression)
-    para ma-predict ang expected borrow demand sa sunod na bulan.
-    """
     preds = predict_demand(DATABASE)
     category_summary = get_category_summary(preds)
     notifs = get_db().execute(
         "SELECT COUNT(*) as c FROM notifications WHERE user_id=? AND is_read=0",
         (session['user_id'],)
     ).fetchone()['c']
-
     return render_template(
         'prediction.html',
         predictions=preds,
@@ -497,12 +490,10 @@ def predictions():
         generated_at=datetime.now().strftime('%B %d, %Y %I:%M %p')
     )
 
-
 @app.route('/api/predictions')
 @login_required
 @role_required('Admin', 'Staff')
 def api_predictions():
-    """JSON endpoint — para sa charts or external tools."""
     preds = predict_demand(DATABASE)
     return jsonify(preds)
 
@@ -551,9 +542,10 @@ def profile():
     notifs = db.execute("SELECT COUNT(*) as c FROM notifications WHERE user_id=? AND is_read=0", (session['user_id'],)).fetchone()['c']
     return render_template('profile.html', user=user, notif_count=notifs)
 
-# BAG-O (mao ni ang sakto)
+# ─── INIT & RUN ───────────────────────────────────────────────────────────────
+
 with app.app_context():
-    init_db()
+    init_db()  # ← FIXED: called AFTER init_db() is defined
 
 if __name__ == '__main__':
     app.run(debug=True)
